@@ -22,10 +22,16 @@ describe('Bullet', function () {
     assert.strictEqual(bullet.x, 50)
   })
 
-  it("should have a Y-coordinate defined by its player", function() {
-    this.player.y = 800
+  it("should have a Y-coordinate equal to the board's height if the player's firing direction is 'up'", function() {
+    this.player.fireDirection = 'up'
     let bullet = new Bullet(this.board, this.lane, this.player)
-    assert.strictEqual(bullet.y, this.player.y)
+    assert.strictEqual(bullet.y, this.board.size.height)
+  })
+
+  it("should have a Y-coordinate less than zero if the player's firing direction is 'down'", function() {
+    this.player.fireDirection = 'down'
+    let bullet = new Bullet(this.board, this.lane, this.player)
+    assert(bullet.y < 0)
   })
 
   it("should be included in the board's array of bullets", function() {
