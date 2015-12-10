@@ -6,7 +6,7 @@ const Player = require('../lib/player')
 
 describe('Player', function () {
   beforeEach(function() {
-    this.board = new Board()
+    this.board = new Board({width: 500, height:800})
   })
 
   it("should have a defined direction of fire", function() {
@@ -15,7 +15,7 @@ describe('Player', function () {
   })
 
   it("should have a Y-coordinate near the bottom of the canvas if the firing direction is 'up'", function() {
-    this.board.canvas.height = 666
+    this.board.size.height = 666
     let player = new Player(this.board, 'up')
     assert.strictEqual(player.y, 666)
   })

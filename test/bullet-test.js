@@ -6,7 +6,7 @@ const Bullet = require('../lib/bullet')
 
 describe('Bullet', function () {
   beforeEach(function() {
-    this.board = new Board()
+    this.board = new Board({width: 500, height: 800})
     this.lane = this.board.lanes[0]
     this.player = this.board.players[0]
   })
@@ -29,12 +29,12 @@ describe('Bullet', function () {
   })
 
   it("should be included in the board's array of bullets", function() {
-    let bullet = new Bullet(this.board, 0, 0)
+    let bullet = new Bullet(this.board, this.lane, this.player)
     assert.include(this.board.bullets, bullet)
   })
 
   it("should add a new bullet to the board's bullets array", function() {
-    let board = new Board()
+    let board = new Board({width: 500, height: 800})
     let bullet = board.addBullet(this.lane, this.player)
     assert.include(board.bullets, bullet)
   })

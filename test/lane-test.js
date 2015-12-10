@@ -6,7 +6,7 @@ const Lane = require('../lib/lane')
 
 describe('Lane', function () {
   beforeEach(function() {
-    this.board = new Board()
+    this.board = new Board({width: 500, height: 800})
   })
 
   it("should have an X-coordinate", function() {
