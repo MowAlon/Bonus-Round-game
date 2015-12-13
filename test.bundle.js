@@ -70,22 +70,26 @@
 	var Lane = __webpack_require__(4);
 	var Bullet = __webpack_require__(5);
 
-	function Board(size) {
-	  this.size = { width: size.width, height: size.height };
+	function Board(assets, size, startingHealth) {
+	  this.size = { width: size.width,
+	    height: size.height,
+	    gamePane: size.gamePane,
+	    infoPane: size.infoPane
+	  };
 	  this.laneCount = 5;
 	  this.lanes = [];
 	  this.bullets = [];
 	  this.players = [];
-	  this.addPlayer('up');
-	  this.addPlayer('down');
+	  this.addPlayer(assets, 'up', startingHealth);
+	  this.addPlayer(assets, 'down', startingHealth);
 	  for (var i = 0; i < this.laneCount; i++) {
 	    this.addLane();
 	  }
 	}
 
 	Board.prototype = {
-	  addPlayer: function addPlayer(direction) {
-	    return new Player(this, direction);
+	  addPlayer: function addPlayer(assets, direction, startingHealth) {
+	    return new Player(this, assets, direction, startingHealth);
 	  },
 
 	  addLane: function addLane() {
@@ -94,7 +98,7 @@
 	  },
 
 	  addBullet: function addBullet(lane, player) {
-	    return new Bullet(this, lane, player);
+	    // return new Bullet(this, lane, player)
 	  }
 
 	};
@@ -107,14 +111,26 @@
 
 	"use strict";
 
-	function Player(board, direction) {
+	function Player(board, assets, direction, startingHealth) {
 	  this.board = board;
+	  this.cannonGraphic = assets.cannon;
 	  this.fireDirection = direction;
-	  this.health = 100;
+	  this.score = 0;
+	  this.health = startingHealth;
 	  this.board.players.push(this);
 	}
 
 	module.exports = Player;
+
+	Player.prototype = {
+	  addPoints: function addPoints(points) {
+	    this.score = this.score + points;
+	  },
+
+	  reduceHealth: function reduceHealth(hitPoints) {
+	    this.health -= hitPoints;
+	  }
+	};
 
 /***/ },
 /* 4 */
@@ -124,7 +140,7 @@
 
 	function Lane(board, laneNumber) {
 	  this.board = board;
-	  var laneWidth = this.board.size.width / board.laneCount;
+	  var laneWidth = this.board.size.gamePane / board.laneCount;
 	  this.x = laneNumber * laneWidth + laneWidth / 2;
 	  this.board.lanes.push(this);
 	}
@@ -163,24 +179,33 @@
 	function Bullet(board, assets, lane, player) {
 	  this.board = board;
 	  this.lane = lane;
-	  // this.player = player
+	  this.player = player;
 	  this.velocity = velocity(player);
-	  this.graphic = graphic(assets, player);
-	  var self = this;
-	  // this.graphic.onload = function() {
-	  self.height = self.graphic.naturalHeight;
-	  self.width = self.graphic.naturalWidth;
-	  self.x = lane.x - self.width / 2;
-	  self.y = startingY(player, self.graphic.naturalHeight);
-	  // }
+	  this.graphic = assets.bullet;
+	  this.height = this.graphic.height;
+	  this.width = this.graphic.width;
+	  this.x = lane.x - this.width / 2;
+	  this.y = startingY(player, this.graphic.height);
 	  this.board.bullets.push(this);
 	}
 
 	Bullet.prototype = {
 	  update: function update() {
+	    self = this;
+	    function offScreen() {
+	      return self.y > self.board.size.height || self.y < 0 - self.graphic.height;
+	    }
+
+	    function otherPlayer(player) {
+	      return self.board.players.find(function (playerFromCollection) {
+	        return playerFromCollection !== player;
+	      });
+	    }
+
 	    this.y += this.velocity;
-	    if (this.y > this.board.size.height || this.y < 0 - this.graphic.naturalHeight) {
+	    if (offScreen()) {
 	      this.destroyBullet();
+	      otherPlayer(this.player).reduceHealth(1);
 	    }
 	  },
 	  headY: function headY() {
@@ -207,9 +232,6 @@
 	}
 
 	function graphic(assets, player) {
-	  // var image = new Image()
-	  // image.src = '../graphics/bullet_' + player.fireDirection + '.gif'
-	  // return image
 	  if (player.fireDirection === 'up') {
 	    return assets.bulletUp;
 	  } else {
