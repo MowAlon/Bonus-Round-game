@@ -5,5 +5,6 @@ canvas, img {
 }
 
 canvas {
-  background:url(graphics/background.jpg)
+  background: url(graphics/background.gif);
+  background-repeat: no-repeat;
 }
