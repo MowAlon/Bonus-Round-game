@@ -1,5 +1,6 @@
 body {
   background-image: url('graphics/bonus_round_background.jpg');
+  background-size: cover;
 }
 canvas, img {
   display:block;
