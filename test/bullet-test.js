@@ -40,9 +40,9 @@ describe('Bullet', function () {
   })
 
   it("should add a new bullet to the board's bullets array", function() {
-    let board = new Board({width: 500, height: 800})
-    let bullet = board.addBullet(this.lane, this.player)
-    assert.include(board.bullets, bullet)
+    var originalBulletCount = this.board.bullets.length
+    let bullet = new Bullet(this.board, {bulletBlack: {height: 0, width: 0}}, this.lane, this.player)
+    assert.equal(this.board.bullets.length, originalBulletCount + 1)
   })
 
 });
