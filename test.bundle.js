@@ -70,7 +70,8 @@
 	var Lane = __webpack_require__(4);
 	var Bullet = __webpack_require__(5);
 
-	function Board(assets, size, startingHealth) {
+	function Board(game, graphics, size, startingHealth) {
+	  this.game = game;
 	  this.size = { width: size.width,
 	    height: size.height,
 	    gamePane: size.gamePane,
@@ -80,25 +81,21 @@
 	  this.lanes = [];
 	  this.bullets = [];
 	  this.players = [];
-	  this.addPlayer(assets, 'up', startingHealth);
-	  this.addPlayer(assets, 'down', startingHealth);
+	  this.addPlayer(graphics, 'up', startingHealth);
+	  this.addPlayer(graphics, 'down', startingHealth);
 	  for (var i = 0; i < this.laneCount; i++) {
 	    this.addLane();
 	  }
 	}
 
 	Board.prototype = {
-	  addPlayer: function addPlayer(assets, direction, startingHealth) {
-	    return new Player(this, assets, direction, startingHealth);
+	  addPlayer: function addPlayer(graphics, direction, startingHealth) {
+	    return new Player(this, graphics, direction, startingHealth);
 	  },
 
 	  addLane: function addLane() {
 	    var laneNumber = this.lanes.length;
 	    return new Lane(this, laneNumber);
-	  },
-
-	  addBullet: function addBullet(lane, player) {
-	    // return new Bullet(this, lane, player)
 	  }
 
 	};
@@ -109,15 +106,18 @@
 /* 3 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 
-	function Player(board, assets, direction, startingHealth) {
+	function Player(board, graphics, direction, startingHealth) {
 	  this.board = board;
-	  this.cannonGraphic = assets.cannon;
+	  this.cannonGraphic = graphics.cannon;
 	  this.fireDirection = direction;
 	  this.score = 0;
 	  this.health = startingHealth;
 	  this.board.players.push(this);
+	  this.shots = { shootTime: 0,
+	    minimumDelay: 150 };
+	  this.shots.goodDelay = board.game.shotDelay * 0.8;
 	}
 
 	module.exports = Player;
@@ -129,8 +129,28 @@
 
 	  reduceHealth: function reduceHealth(hitPoints) {
 	    this.health -= hitPoints;
+	  },
+
+	  shotStyle: function shotStyle() {
+	    if (timeNow() - this.shots.shootTime < this.shots.goodDelay) {
+	      return 'bad';
+	    } else {
+	      return 'good';
+	    }
+	  },
+
+	  timeSinceLastShot: function timeSinceLastShot() {
+	    return timeNow() - this.shots.shootTime;
+	  },
+
+	  pastMinimumWait: function pastMinimumWait() {
+	    return this.timeSinceLastShot() >= this.shots.minimumDelay;
 	  }
 	};
+
+	function timeNow() {
+	  return new Date().getTime();
+	}
 
 /***/ },
 /* 4 */
@@ -176,38 +196,30 @@
 
 	'use strict';
 
-	function Bullet(board, assets, lane, player) {
+	function Bullet(board, graphics, lane, player, type) {
 	  this.board = board;
 	  this.lane = lane;
 	  this.player = player;
 	  this.velocity = velocity(player);
-	  this.graphic = assets.bullet;
+	  this.graphic = graphic(graphics, type);
 	  this.height = this.graphic.height;
 	  this.width = this.graphic.width;
 	  this.x = lane.x - this.width / 2;
 	  this.y = startingY(player, this.graphic.height);
+	  this.distance = { traveled: 0,
+	    bad: 150,
+	    good: board.size.height + 100 };
+	  this.distance.allowed = this.distanceAllowed(type);
 	  this.board.bullets.push(this);
 	}
 
 	Bullet.prototype = {
 	  update: function update() {
 	    self = this;
-	    function offScreen() {
-	      return self.y > self.board.size.height || self.y < 0 - self.graphic.height;
-	    }
-
-	    function otherPlayer(player) {
-	      return self.board.players.find(function (playerFromCollection) {
-	        return playerFromCollection !== player;
-	      });
-	    }
-
 	    this.y += this.velocity;
-	    if (offScreen()) {
-	      this.destroyBullet();
-	      otherPlayer(this.player).reduceHealth(1);
-	    }
+	    this.distance.traveled += Math.abs(this.velocity);
 	  },
+
 	  headY: function headY() {
 	    if (this.velocity < 0) {
 	      return this.y;
@@ -215,10 +227,19 @@
 	      return this.y + this.height;
 	    }
 	  },
+
 	  destroyBullet: function destroyBullet() {
 	    this.board.bullets = this.board.bullets.filter(function (bullet) {
 	      return bullet !== this;
 	    }, this);
+	  },
+
+	  distanceAllowed: function distanceAllowed(type) {
+	    if (type === 'bad') {
+	      return this.distance.bad;
+	    } else {
+	      return this.distance.good;
+	    }
 	  }
 	};
 
@@ -231,19 +252,20 @@
 	  }
 	}
 
-	function graphic(assets, player) {
-	  if (player.fireDirection === 'up') {
-	    return assets.bulletUp;
+	function graphic(graphics, type) {
+	  var style = type || 'good';
+	  if (style === 'good') {
+	    return graphics.bulletBlack;
 	  } else {
-	    return assets.bulletDown;
+	    return graphics.bulletGray;
 	  }
 	}
 
 	function startingY(player, height) {
 	  if (player.fireDirection === 'up') {
-	    return player.board.size.height;
+	    return player.board.size.height - player.cannonGraphic.height;
 	  } else {
-	    return -height;
+	    return -height + player.cannonGraphic.height;
 	  }
 	}
 
@@ -558,45 +580,45 @@
 	describe('Board', function () {
 
 	  it("should instantiate a new board", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.isObject(board);
 	  });
 
 	  it("should have a copy of the canvas size specs", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.equal(board.size.width, 500);
 	    assert.equal(board.size.height, 800);
 	  });
 
 	  it("should have five lanes", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.equal(board.lanes.length, 5);
 	  });
 
 	  it("should start with an empty array of bullets", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.isArray(board.bullets);
 	    assert.deepEqual(board.bullets, []);
 	  });
 
 	  it("should have two players", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.equal(board.players.length, 2);
 	  });
 
 	  it("should assign the first player's firing direction as 'up'", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.equal(board.players[0].fireDirection, 'up');
 	  });
 
 	  it("should assign the second player's firing direction as 'down'", function () {
-	    var board = new Board({ width: 500, height: 800 });
+	    var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	    assert.equal(board.players[1].fireDirection, 'down');
 	  });
 
 	  describe('addPlayer', function () {
 	    it("should add a new player to the board's players array", function () {
-	      var board = new Board({ width: 500, height: 800 });
+	      var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	      var player = board.addPlayer('up');
 	      assert.include(board.players, player);
 	    });
@@ -604,21 +626,13 @@
 
 	  describe('addLane', function () {
 	    it("should add a new lane to the board's lanes array", function () {
-	      var board = new Board({ width: 500, height: 800 });
+	      var board = new Board({ shotDelay: 0 }, { cannon: 0 }, { width: 500, height: 800 });
 	      var laneCountBefore = board.lanes.length;
 	      var laneNumber = 0;
 	      var lane = board.addLane(board, laneNumber);
 	      var laneCountAfter = board.lanes.length;
 	      assert.include(board.lanes, lane);
 	      assert.equal(laneCountAfter, laneCountBefore + 1);
-	    });
-	  });
-
-	  describe('addBullet', function () {
-	    it("should add a new bullet to the board's bullets array", function () {
-	      var board = new Board({ width: 500, height: 800 });
-	      var bullet = board.addBullet(board.lanes[0], board.players[0]);
-	      assert.include(board.bullets, bullet);
 	    });
 	  });
 	});
@@ -8495,36 +8509,36 @@
 
 	describe('Bullet', function () {
 	  beforeEach(function () {
-	    this.board = new Board({ width: 500, height: 800 });
+	    this.board = new Board({ shotDelay: 0 }, { bulletBlack: { height: 0 }, cannon: { height: 0 } }, { width: 500, height: 800 });
 	    this.lane = this.board.lanes[0];
 	    this.player = this.board.players[0];
 	  });
 
 	  it("should have a reference to the board", function () {
-	    var bullet = new Bullet(this.board, this.lane, this.player);
+	    var bullet = new Bullet(this.board, { bulletBlack: { height: 0, width: 0 } }, this.lane, this.player);
 	    assert.equal(bullet.board, this.board);
 	  });
 
 	  it("should have an X-coordinate defined by its lane", function () {
 	    this.lane.x = 50;
-	    var bullet = new Bullet(this.board, this.lane, this.player);
+	    var bullet = new Bullet(this.board, { bulletBlack: { height: 0, width: 0 } }, this.lane, this.player);
 	    assert.strictEqual(bullet.x, 50);
 	  });
 
 	  it("should have a Y-coordinate equal to the board's height if the player's firing direction is 'up'", function () {
 	    this.player.fireDirection = 'up';
-	    var bullet = new Bullet(this.board, this.lane, this.player);
+	    var bullet = new Bullet(this.board, { bulletBlack: { height: 0, width: 0 } }, this.lane, this.player);
 	    assert.strictEqual(bullet.y, this.board.size.height);
 	  });
 
-	  it("should have a Y-coordinate less than zero if the player's firing direction is 'down'", function () {
+	  it("should have a Y-coordinate equal to the cannon's height minus the bullet's height if the player's firing direction is 'down'", function () {
 	    this.player.fireDirection = 'down';
-	    var bullet = new Bullet(this.board, this.lane, this.player);
-	    assert(bullet.y < 0);
+	    var bullet = new Bullet(this.board, { bulletBlack: { height: 1, width: 0 } }, this.lane, this.player);
+	    assert(bullet.y = this.board.graphics.cannon.height - this.board.graphics.bulletBlack.height);
 	  });
 
 	  it("should be included in the board's array of bullets", function () {
-	    var bullet = new Bullet(this.board, this.lane, this.player);
+	    var bullet = new Bullet(this.board, { bulletBlack: { height: 0, width: 0 } }, this.lane, this.player);
 	    assert.include(this.board.bullets, bullet);
 	  });
 

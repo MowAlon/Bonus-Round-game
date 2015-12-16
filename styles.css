@@ -1,3 +1,6 @@
+body {
+  background-image: url('graphics/bonus_round_background.jpg');
+}
 canvas, img {
   display:block;
   margin:1em auto;
@@ -5,6 +8,6 @@ canvas, img {
 }
 
 canvas {
-  background: url(graphics/background.gif);
+  background: url('graphics/background.gif');
   background-repeat: no-repeat;
 }
