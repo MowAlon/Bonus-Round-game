@@ -3,12 +3,13 @@ const assert = chai.assert;
 
 const Board = require('../lib/board')
 const Bullet = require('../lib/bullet')
+// const Game = require('../lib/game')
 
 describe('Bullet', function () {
   beforeEach(function() {
     this.board = new Board({shotDelay: 0}, {bulletBlack: {height: 0}, cannon: {height: 0}}, {width: 500, height: 800})
     this.lane = this.board.lanes[0]
-    this.player = this.board.players[0]
+    this.player = {fireDirection: 'up'}
   })
 
   it("should have a reference to the board", function() {
@@ -16,23 +17,21 @@ describe('Bullet', function () {
     assert.equal(bullet.board, this.board)
   })
 
-  it("should have an X-coordinate defined by its lane", function() {
+  it("should have an X-coordinate defined by its lane minus half its width", function() {
     this.lane.x = 50
-    let bullet = new Bullet(this.board, {bulletBlack: {height: 0, width: 0}, cannon: {height: 0}}, this.lane, this.player)
-    assert.strictEqual(bullet.x, 50)
+    let bullet = new Bullet(this.board, {bulletBlack: {height: 10, width: 10}, cannon: {height: 0}}, this.lane, this.player)
+    assert.strictEqual(bullet.x, 50 - 10/2)
   })
 
-  it("should have a Y-coordinate equal to the board's height if the player's firing direction is 'up'", function() {
-    this.player.fireDirection = 'up'
-    let bullet = new Bullet(this.board, {bulletBlack: {height: 0, width: 0}, cannon: {height: 0}}, this.lane, this.player)
-    assert.strictEqual(bullet.y, this.board.size.height)
+  it("should have a Y-coordinate equal to the board's height minus the cannon's height if the player's firing direction is 'up'", function() {
+    let bullet = new Bullet(this.board, {bulletBlack: {height: 10, width: 10}, cannon: {height: 20}}, this.lane, this.player)
+    assert.strictEqual(bullet.y, this.board.size.height - 20)
   })
 
   it("should have a Y-coordinate equal to the cannon's height minus the bullet's height if the player's firing direction is 'down'", function() {
     this.player.fireDirection = 'down'
-    let bullet = new Bullet(this.board, {bulletBlack: {height: 1, width: 0}, cannon: {height: 10}}, this.lane, this.player)
-    console.log(bullet.graphics.cannon.height)// + " -- " + bullet.graphics.bulletBlack.height)
-    assert.equal(bullet.y, bullet.grapics.cannon.height - bullet.graphics.bulletBlack.height)
+    let bullet = new Bullet(this.board, {bulletBlack: {height: 10, width: 0}, cannon: {height: 20}}, this.lane, this.player)
+    assert.equal(bullet.y, 20 - 10)
   })
 
   it("should be included in the board's array of bullets", function() {

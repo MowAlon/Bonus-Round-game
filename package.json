@@ -25,6 +25,7 @@
     "chai": "^3.2.0",
     "css-loader": "^0.15.5",
     "imports": "^1.0.0",
+    "jquery": "^2.1.4",
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
     "mocha-loader": "^0.7.1",

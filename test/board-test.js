@@ -27,29 +27,6 @@ describe('Board', function() {
     assert.deepEqual(board.bullets, [])
   })
 
-  it("should have two players", function(){
-    let board = new Board({shotDelay: 0}, {cannon: 0}, {width: 500, height: 800})
-    assert.equal(board.players.length, 2)
-  })
-
-  it("should assign the first player's firing direction as 'up'", function() {
-    let board = new Board({shotDelay: 0}, {cannon: 0}, {width: 500, height: 800})
-    assert.equal(board.players[0].fireDirection, 'up')
-  })
-
-  it("should assign the second player's firing direction as 'down'", function() {
-    let board = new Board({shotDelay: 0}, {cannon: 0}, {width: 500, height: 800})
-    assert.equal(board.players[1].fireDirection, 'down')
-  })
-
-  describe ('addPlayer', function() {
-    it("should add a new player to the board's players array", function() {
-      let board = new Board({shotDelay: 0}, {cannon: 0}, {width: 500, height: 800})
-      let player = board.addPlayer('up')
-      assert.include(board.players, player)
-    })
-  })
-
   describe ('addLane', function() {
     it("should add a new lane to the board's lanes array", function() {
       let board = new Board({shotDelay: 0}, {cannon: 0}, {width: 500, height: 800})
