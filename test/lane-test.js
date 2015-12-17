@@ -1,6 +1,5 @@
 const chai = require('chai');
 const assert = chai.assert;
-const sinon = require('sinon')
 
 const Board = require('../lib/board')
 const Lane = require('../lib/lane')
