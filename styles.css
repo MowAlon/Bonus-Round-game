@@ -10,7 +10,7 @@ canvas, img {
 }
 
 canvas {
-  background: url('graphics/background.gif');
+  background: url('graphics/canvas_background.gif');
   background-repeat: no-repeat;
   border-radius: 15px;
 }

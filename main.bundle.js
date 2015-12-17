@@ -224,10 +224,6 @@
 
 	//////////////////////////////////////////////////////
 
-	function firingKeyPressed(fireButtons, keyCode) {
-	  return Array.isArray(fireButtons[keyCode]);
-	}
-
 	function timeNow() {
 	  return new Date().getTime();
 	}
@@ -10030,16 +10026,10 @@
 	    explosion: new SoundPool(50, 'sounds/explosion.mp3'),
 	    bulletsCollide: new SoundPool(50, 'sounds/coin.mp3'),
 	    pause: new SoundPool(1, 'sounds/pause.mp3'),
-	    gameover: new SoundPool(1, 'sounds/gameover.mp3'),
 	    marioGameover: new SoundPool(1, 'sounds/mario_gameover.mp3'),
 	    marioMamamia: new SoundPool(5, 'sounds/mario_mamamia.mp3'),
 	    marioYippee: new SoundPool(2, 'sounds/mario_yippee.mp3'),
 	    marioHappy: new SoundPool(2, 'sounds/mario_happy.mp3')
-	    // marioHurt = new SoundPool(1, 'sounds/mario_hurt.mp3')
-	    // luigiHurt = new SoundPool(1, 'sounds/luigi_hurt.mp3')
-	    // yoshiHurt = new SoundPool(1, 'sounds/yoshi_hurt.wav')
-	    // peachHurt = new SoundPool(1, 'sounds/peach_hurt.mp3')
-	    // toadHurt = new SoundPool(1, 'sounds/toad_hurt.mp3')
 	  };
 
 	  function newImage(src, frames, frameInterval) {
