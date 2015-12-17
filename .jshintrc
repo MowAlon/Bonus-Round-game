@@ -34,5 +34,6 @@
   "unused": true,
   "mocha": true,
 
-  "asi": true
+  "asi": true,
+  "loopfunc": true
 }
