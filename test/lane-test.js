@@ -1,15 +1,19 @@
 const chai = require('chai');
 const assert = chai.assert;
+const sinon = require('sinon')
 
 const Board = require('../lib/board')
 const Lane = require('../lib/lane')
 
+
 describe('Lane', function () {
   beforeEach(function() {
-    this.board = new Board({width: 500, height: 800})
+    this.board = new Board({}, {}, {width: 500, height: 800, gamePane: 500})
   })
 
   it("should have an X-coordinate", function() {
+    var junk = { hello: function(){return 'hello'}}
+    //sinon //.spy(junk, 'hello')
     var laneNumber = 1
     var canvasWidth = 500
     var laneCount = 5

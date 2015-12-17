@@ -65,14 +65,19 @@
 
 	function graphics() {
 	  var graphics = {};
-	  graphics.bulletBlack = newImage('../graphics/bullet_black.gif');
-	  graphics.bulletGray = newImage('../graphics/bullet_gray.gif');
+	  graphics.bulletBlack = newImage('../graphics/bullet_hi-res.gif');
+	  graphics.bulletGray = newImage('../graphics/bullet_weak_hi-res.gif');
 	  graphics.cannon = newImage('../graphics/cannon.gif');
-	  graphics.mario = newImage('../graphics/waving_mario.gif');
-	  graphics.luigi = newImage('../graphics/waving_luigi.gif');
-	  graphics.yoshi = newImage('../graphics/walking_yoshi.gif');
-	  graphics.peach = newImage('../graphics/waving_peach.gif');
-	  graphics.toad = newImage('../graphics/waving_toad.gif');
+	  graphics.mario = newImage('../graphics/waving_mario_sprites.gif', 2);
+	  graphics.luigi = newImage('../graphics/waving_luigi_sprites.gif', 2);
+	  graphics.yoshi = newImage('../graphics/walking_yoshi_sprites.gif', 2);
+	  graphics.peach = newImage('../graphics/waving_peach_sprites.gif', 2);
+	  graphics.toad = newImage('../graphics/waving_toad_sprites.gif', 2);
+	  graphics.bowser = newImage('../graphics/bowser_sprites.gif', 6);
+	  graphics.goomba = newImage('../graphics/goomba_sprites.gif', 2);
+	  graphics.footballguy = newImage('../graphics/football_player_sprites.gif', 8);
+	  graphics.evilFlower = newImage('../graphics/evil_flower_sprites.gif', 2);
+	  graphics.koopaTroopa = newImage('../graphics/koopa_troopa_sprites.gif', 2);
 	  return graphics;
 	}
 
@@ -84,13 +89,25 @@
 	  sounds.pause = new SoundPool(1, 'sounds/pause.mp3');
 	  sounds.gameover = new SoundPool(1, 'sounds/gameover.mp3');
 	  sounds.marioGameover = new SoundPool(1, 'sounds/mario_gameover.mp3');
-
+	  sounds.marioMamamia = new SoundPool(5, 'sounds/mario_mamamia.mp3');
+	  sounds.marioYippee = new SoundPool(2, 'sounds/mario_yippee.mp3');
+	  sounds.marioHappy = new SoundPool(2, 'sounds/mario_happy.mp3');
+	  // sounds.marioHurt = new SoundPool(1, 'sounds/mario_hurt.mp3')
+	  // sounds.luigiHurt = new SoundPool(1, 'sounds/luigi_hurt.mp3')
+	  // sounds.yoshiHurt = new SoundPool(1, 'sounds/yoshi_hurt.wav')
+	  // sounds.peachHurt = new SoundPool(1, 'sounds/peach_hurt.mp3')
+	  // sounds.toadHurt = new SoundPool(1, 'sounds/toad_hurt.mp3')
 	  return sounds;
 	}
 
-	function newImage(src) {
+	function newImage(src, frames, frameInterval) {
 	  var image = new Image();
 	  image.src = src;
+	  image.cycle = 0;
+	  image.frames = frames || 1;
+	  image.frameInterval = frameInterval || 120;
+	  image.lastAnimationTime = 0;
+	  image.alive = true;
 	  return image;
 	}
 
@@ -112,14 +129,6 @@
 	    currentSound = (currentSound + 1) % size;
 	  };
 	}
-
-	/*
-	-----scoring
-	-----health/game over
-	-automate random dropping of bullets from sky -- now force them into a specific time window
-	-
-
-	*/
 
 /***/ },
 /* 1 */
@@ -182,7 +191,7 @@
 
 	  function pauseGame(self, keyPressed) {
 	    // ~/` (tilda/backtick) is keyCode 192
-	    if (keyPressed.keyCode === 192 && !justStarted) {
+	    if (keyPressed.keyCode === 192 && !justStarted && !self.gameOver()) {
 	      self.paused = !self.paused;
 	      assets.sounds.pause.playSound();
 	      if (self.paused) {
@@ -208,7 +217,28 @@
 	          if (bullet && offScreen(bullet)) {
 	            assets.sounds.explosion.playSound();
 	            bullet.destroyBullet();
-	            otherPlayer(bullet.player).reduceHealth(1);
+
+	            var laneNumber = board.lanes.indexOf(bullet.lane);
+	            var goodGuy = board.characters.good[laneNumber];
+	            var badGuy = board.characters.bad[laneNumber];
+	            if (bullet.velocity > 0) {
+	              if (goodGuy.alive) {
+	                goodGuy.alive = false;
+	                otherPlayer(bullet.player).reduceHealth(2);
+	                assets.sounds.marioMamamia.playSound();
+	              } else {
+	                otherPlayer(bullet.player).reduceHealth(1);
+	              }
+	            } else {
+	              if (badGuy.alive) {
+	                badGuy.alive = false;
+	                bullet.player.score += 50;
+	                assets.sounds.marioYippee.playSound();
+	              } else {
+	                bullet.player.score += 20;
+	                assets.sounds.marioHappy.playSound();
+	              }
+	            }
 	          }
 	        });
 	      }
@@ -336,6 +366,7 @@
 	    context.clearRect(0, 0, board.size.gamePane, board.size.height);
 	    var middleXOfGamePane = board.size.gamePane / 2;
 	    context.font = "120px Verdana";
+	    context.fillStyle = "red";
 	    context.fillText("Game", middleXOfGamePane, board.size.height / 2);
 	    context.fillText("Over", middleXOfGamePane, board.size.height / 2 + 120);
 	    context.font = "30px Verdana";
@@ -346,9 +377,11 @@
 	    context.clearRect(0, 0, board.size.gamePane, board.size.height);
 	    var centerOfGamePane = { x: board.size.gamePane / 2, y: board.size.height / 2 };
 	    context.font = "120px Verdana";
-	    context.fillText("Gunner", centerOfGamePane.x, centerOfGamePane.y - 100);
+	    context.fillStyle = "black";
+	    context.fillText("Bonus", centerOfGamePane.x, centerOfGamePane.y - 100);
+	    context.fillText("Round", centerOfGamePane.x, centerOfGamePane.y + 20);
 	    context.font = "50px Verdana";
-	    context.fillText("Shoot to start!", centerOfGamePane.x, centerOfGamePane.y + 100);
+	    context.fillText("Shoot to start!", centerOfGamePane.x, centerOfGamePane.y + 150);
 	    context.fillText("⬛️ ⬛️ ⬛️ ⬛️ ⬛️", centerOfGamePane.x, centerOfGamePane.y + 370);
 	    context.font = "30px Verdana";
 	    context.fillStyle = 'red';
@@ -365,6 +398,10 @@
 	    board.bullets = [];
 	    this.paused = false;
 	    this.assets.sounds.marioGameover.played = false;
+	    var characters = board.characters.good.concat(board.characters.bad);
+	    characters.forEach(function (lane) {
+	      lane.alive = true;
+	    });
 	    board.players.forEach(function (player) {
 	      player.score = 0;
 	      player.health = startingHealth;
@@ -376,7 +413,7 @@
 	function drawBullets(context, board) {
 	  for (var i = 0; i < board.bullets.length; i++) {
 	    var bullet = board.bullets[i];
-	    var cannonHeight = bullet.player.cannonGraphic.height;
+	    var cannonHeight = board.graphics.cannon.height;
 	    var graphic = bullet.graphic;
 	    if (bullet.player.fireDirection === 'up') {
 	      drawRotatedImage(context, graphic, bullet.x, bullet.y, 0);
@@ -389,7 +426,7 @@
 	function drawCannons(context, board) {
 	  for (var playerIndex = 0; playerIndex < board.players.length; playerIndex++) {
 	    var player = board.players[playerIndex];
-	    var graphic = player.cannonGraphic;
+	    var graphic = board.graphics.cannon;
 
 	    for (var laneIndex = 0; laneIndex < board.lanes.length; laneIndex++) {
 	      var lane = board.lanes[laneIndex];
@@ -406,9 +443,17 @@
 
 	function drawCharacters(context, board) {
 	  var graphics = board.game.assets.graphics;
-	  var characters = [graphics.mario, graphics.luigi, graphics.yoshi, graphics.peach, graphics.toad];
-	  characters.forEach(function (graphic, index) {
-	    drawRotatedImage(context, graphic, board.lanes[index].x - graphic.width / 2, board.size.height - graphic.height, 0);
+	  var goodGuys = board.characters.good;
+	  var badGuys = board.characters.bad;
+	  goodGuys.forEach(function (character, index) {
+	    if (character.alive) {
+	      drawAnimatedImage(character, board.lanes[index].x, board.size.height - character.height, context);
+	    }
+	  });
+	  badGuys.forEach(function (character, index) {
+	    if (character.alive) {
+	      drawAnimatedImage(character, board.lanes[index].x, 0, context);
+	    }
 	  });
 	}
 
@@ -418,23 +463,33 @@
 	  });
 	  var timeMeterHeight = Math.min(100, player.timeSinceLastShot() / player.shots.goodDelay * 100);
 	  if (timeMeterHeight === 100) {
-	    context.fillStyle = 'yellow';
+	    context.fillStyle = 'lightgreen';
 	  }
-	  context.fillRect(4, board.size.height - timeMeterHeight, 6, timeMeterHeight);
+	  context.fillRect(4, board.size.height - timeMeterHeight, 8, timeMeterHeight);
 	  context.fillStyle = 'black';
 	}
 
 	function drawInfoPane(context, board) {
 	  var middleXOfInfoPane = board.size.gamePane + board.size.infoPane / 2;
+	  context.fillStyle = "white";
+	  context.strokeStyle = "black";
+	  context.globalAlpha = 0.5;
+	  context.fillRect(board.size.width - board.size.infoPane, 0, board.size.infoPane, board.size.height);
+	  context.globalAlpha = 1;
 	  context.textAlign = "center";
 
-	  context.font = "25px Verdana";
-	  context.fillText("Score", middleXOfInfoPane, 30);
+	  context.lineWidth = 2;
+	  context.font = "bold 35px Verdana";
+	  context.fillText("Score", middleXOfInfoPane, 40);
+	  context.strokeText("Score", middleXOfInfoPane, 40);
 	  context.fillText("Health", middleXOfInfoPane, 250);
+	  context.strokeText("Health", middleXOfInfoPane, 250);
 
 	  context.font = "50px Verdana";
-	  context.fillText(board.players[0].score, middleXOfInfoPane, 80);
+	  context.fillText(board.players[0].score, middleXOfInfoPane, 90);
+	  context.strokeText(board.players[0].score, middleXOfInfoPane, 90);
 	  context.fillText(board.players[0].health, middleXOfInfoPane, 300);
+	  context.strokeText(board.players[0].health, middleXOfInfoPane, 300);
 	}
 
 	var TO_RADIANS = Math.PI / 180;
@@ -444,6 +499,21 @@
 	  context.rotate(angle * TO_RADIANS);
 	  context.drawImage(image, -(image.width / 2), -(image.height / 2));
 	  context.restore();
+	}
+
+	function drawAnimatedImage(graphic, x, y, context) {
+	  var spriteWidth = spriteWidth || graphic.width / graphic.frames;
+	  var x = x - spriteWidth / 2 || 0;
+	  var y = y || 0;
+	  context.drawImage(graphic,
+	  // source rectangle
+	  graphic.cycle * spriteWidth, 0, spriteWidth, graphic.height,
+	  // destination rectangle
+	  x, y, spriteWidth, graphic.height);
+	  if (timeNow() - graphic.lastAnimationTime >= graphic.frameInterval) {
+	    graphic.cycle = (graphic.cycle + 1) % graphic.frames;
+	    graphic.lastAnimationTime = timeNow();
+	  }
 	}
 
 	function offScreen(bullet) {
@@ -501,6 +571,7 @@
 
 	function Board(game, graphics, size, startingHealth) {
 	  this.game = game;
+	  this.graphics = graphics;
 	  this.size = { width: size.width,
 	    height: size.height,
 	    gamePane: size.gamePane,
@@ -510,6 +581,10 @@
 	  this.lanes = [];
 	  this.bullets = [];
 	  this.players = [];
+	  this.characters = {
+	    good: [graphics.mario, graphics.luigi, graphics.yoshi, graphics.peach, graphics.toad],
+	    bad: [graphics.goomba, graphics.evilFlower, graphics.bowser, graphics.footballguy, graphics.koopaTroopa]
+	  };
 	  this.addPlayer(graphics, 'up', startingHealth);
 	  this.addPlayer(graphics, 'down', startingHealth);
 	  for (var i = 0; i < this.laneCount; i++) {
@@ -539,7 +614,6 @@
 
 	function Player(board, graphics, direction, startingHealth) {
 	  this.board = board;
-	  this.cannonGraphic = graphics.cannon;
 	  this.fireDirection = direction;
 	  this.score = 0;
 	  this.health = startingHealth;
@@ -557,7 +631,11 @@
 	  },
 
 	  reduceHealth: function reduceHealth(hitPoints) {
-	    this.health -= hitPoints;
+	    if (this.health - hitPoints >= 0) {
+	      this.health -= hitPoints;
+	    } else {
+	      this.health = 0;
+	    }
 	  },
 
 	  shotStyle: function shotStyle() {
@@ -634,7 +712,7 @@
 	  this.height = this.graphic.height;
 	  this.width = this.graphic.width;
 	  this.x = lane.x - this.width / 2;
-	  this.y = startingY(player, this.graphic.height);
+	  this.y = startingY(player, this.graphic.height, graphics.cannon);
 	  this.distance = { traveled: 0,
 	    bad: 150,
 	    good: board.size.height + 100 };
@@ -690,11 +768,11 @@
 	  }
 	}
 
-	function startingY(player, height) {
+	function startingY(player, height, cannon) {
 	  if (player.fireDirection === 'up') {
-	    return player.board.size.height - player.cannonGraphic.height;
+	    return player.board.size.height - cannon.height;
 	  } else {
-	    return -height + player.cannonGraphic.height;
+	    return -height + cannon.height;
 	  }
 	}
 
