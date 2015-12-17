@@ -1,4 +1,4 @@
-It's time for a
+It's time for the...
 # Bonus Round
 
 Use the keyboard or whatever custom controller you want to protect the Mushroom Kingdom from a never-ending barage of bullets.
