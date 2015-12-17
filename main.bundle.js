@@ -151,7 +151,7 @@
 	  },
 
 	  update: function update() {
-	    var bombsDestroyed = this.board.HandleAllCollisions(this);
+	    var bombsDestroyed = this.board.handleAllCollisions(this);
 	    this.players[0].addPoints(bombsDestroyed);
 	    for (var i = 0; i < this.board.bullets.length; i++) {
 	      this.board.bullets[i].update();
@@ -269,7 +269,7 @@
 	    });
 	  },
 
-	  HandleAllCollisions: function HandleAllCollisions(game) {
+	  handleAllCollisions: function handleAllCollisions(game) {
 	    var bombsDestroyed = clearHeadBullets(this, game);
 	    clearShortBullets(this.playerBullets());
 	    return bombsDestroyed;
@@ -283,7 +283,9 @@
 	  self.lanes.forEach(function (lane) {
 	    var headBullets = [lane.frontUpBullet(), lane.frontDownBullet()];
 	    if (removeCollidingBullets(headBullets)) {
-	      game.assets.sounds.bulletsCollide.playSound();
+	      if (game.assets.sounds.bulletsCollide.playSound) {
+	        game.assets.sounds.bulletsCollide.playSound();
+	      }
 	      bombsDestroyed++;
 	    }
 	    clearOffScreenBullets(game, headBullets);
@@ -394,22 +396,21 @@
 
 	Lane.prototype = {
 	  bullets: function bullets() {
-	    var self = this;
 	    return this.board.bullets.filter(function (bullet) {
-	      return bullet.lane.x === self.x;
-	    });
+	      return bullet.lane.x === this.x;
+	    }, this);
 	  },
 
 	  frontDownBullet: function frontDownBullet() {
-	    return this.bullets().filter(function (bullet) {
+	    return this.bullets().find(function (bullet) {
 	      return bullet.velocity > 0;
-	    })[0];
+	    });
 	  },
 
 	  frontUpBullet: function frontUpBullet() {
-	    return this.bullets().filter(function (bullet) {
+	    return this.bullets().find(function (bullet) {
 	      return bullet.velocity < 0;
-	    })[0];
+	    });
 	  }
 	};
 
