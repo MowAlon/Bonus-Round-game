@@ -648,14 +648,15 @@
 	  showStartScreen: function showStartScreen() {
 	    this.context.clearRect(0, 0, this.board.size.gamePane, this.board.size.height);
 	    var centerOfGamePane = { x: this.board.size.gamePane / 2, y: this.board.size.height / 2 };
-	    this.context.font = "120px Verdana";
+	    this.context.font = "170px Bangers";
 	    this.context.fillStyle = "black";
 	    this.context.fillText("Bonus", centerOfGamePane.x, centerOfGamePane.y - 100);
 	    this.context.fillText("Round", centerOfGamePane.x, centerOfGamePane.y + 20);
-	    this.context.font = "50px Verdana";
+	    this.context.font = "50px Bangers";
 	    this.context.fillText("Press Fire to start!", centerOfGamePane.x, centerOfGamePane.y + 150);
+	    this.context.font = "50px Verdana";
 	    this.context.fillText("⬛️ ⬛️ ⬛️ ⬛️ ⬛️", centerOfGamePane.x, centerOfGamePane.y + 370);
-	    this.context.font = "30px Verdana";
+	    this.context.font = "30px Bangers";
 	    this.context.fillStyle = 'red';
 	    this.context.fillText("Fire keys:", centerOfGamePane.x, centerOfGamePane.y + 300);
 	    this.context.font = '20px Verdana';
@@ -669,11 +670,11 @@
 	  announceGameOver: function announceGameOver() {
 	    this.context.clearRect(0, 0, this.board.size.gamePane, this.board.size.height);
 	    var middleXOfGamePane = this.board.size.gamePane / 2;
-	    this.context.font = "120px Verdana";
+	    this.context.font = "120px Bangers";
 	    this.context.fillStyle = "red";
 	    this.context.fillText("Game", middleXOfGamePane, this.board.size.height / 2);
 	    this.context.fillText("Over", middleXOfGamePane, this.board.size.height / 2 + 120);
-	    this.context.font = "30px Verdana";
+	    this.context.font = "30px Bangers";
 	    this.context.fillText("Fire for another round!", middleXOfGamePane, this.board.size.height / 2 + 240);
 	  }
 
@@ -769,7 +770,7 @@
 	    game.paused = !game.paused;
 	    game.assets.sounds.pause.playSound();
 	    if (game.paused) {
-	      game.context.font = 'bold 100px Verdana';
+	      game.context.font = 'bold 100px Bangers';
 	      game.context.lineWidth = 5;
 	      game.context.strokeStyle = 'red';
 	      game.context.strokeText("PAUSED", game.board.size.gamePane / 2, game.board.size.height / 2);
@@ -10009,7 +10010,7 @@
 	  this.graphics = {
 	    bulletBlack: newImage('graphics/bullet_hi-res.gif'),
 	    bulletGray: newImage('graphics/bullet_weak_hi-res.gif'),
-	    cannon: newImage('graphics/cannon.gif'),
+	    cannon: newImage('graphics/cannon_hi-res_64.gif'),
 	    mario: newImage('graphics/waving_mario_sprites.gif', 2),
 	    luigi: newImage('graphics/waving_luigi_sprites.gif', 2),
 	    yoshi: newImage('graphics/walking_yoshi_sprites.gif', 2),
