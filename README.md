@@ -1,31 +1,10 @@
-# Game Time Starter Kit
+It's time for the...
+# Bonus Round
 
-To install the dependencies:
+Use the keyboard or whatever custom controller you want to protect the Mushroom Kingdom from a never-ending barage of bullets.
 
-```
-npm install
-```
+Immediately playable at [http://mowalon.github.io/Bonus-Round-game/]
 
-To fire up a development server:
+Use Space-J-K-L-; (that's the home row, baby!) to defend with your own bullets, but make sure you don't shoot too fast, or you'll never make it across to the bad guys.
 
-```
-npm start
-```
-
-Once the server is running, you can visit:
-
-* `http://localhost:8080/webpack-dev-server/` to run your application.
-* `http://localhost:8080/webpack-dev-server/test.html` to run your test suite in the browser.
-
-To build the static files:
-
-```js
-npm build
-```
-
-
-To run tests in Node:
-
-```js
-npm test
-```
+If you need to take a potty break, just tap that '~' button to pause.
